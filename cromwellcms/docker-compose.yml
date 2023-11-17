@@ -1,0 +1,53 @@
+version: '3'
+services:
+  db:
+    image: mariadb:latest
+    container_name: mariadb_container
+    volumes:
+      - ./db_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: cromwell
+      MYSQL_USER: cromwell
+      MYSQL_PASSWORD: my_password
+
+  # we don't need this
+  # phpmyadmin:
+  #   depends_on:
+  #     - db
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpadmin_container
+  #   environment:
+  #     PMA_HOST: db
+  #     PHP_MEMORY_LIMIT: 512M
+  #   links:
+  #     - db:db
+  #   ports:
+  #     - 8081:80
+  #   restart: unless-stopped
+
+  cromwell:
+    image: cromwellcms/cromwell:latest
+    container_name: cromwell_container
+    depends_on:
+      - db
+    volumes:
+      - ./cmsconfig.json:/app/cmsconfig.json:ro
+      - ./nginx:/app/nginx
+      - ./public:/app/public
+      - ./.cromwell/server:/app/.cromwell/server
+      - ./.cromwell/logs:/app/.cromwell/logs
+    ports:
+      - 8082:80 # make sure export PORT=8082 is same as the apiUrl in cmsconfig.json
+    restart: unless-stopped
+    # we can not use ENV because we have used `cmsconfig.json`
+    # environment:
+    #   DB_TYPE: mariadb
+    #   DB_HOST: db
+    #   DB_PORT: 3306
+    #   DB_DATABASE: cromwell
+    #   DB_USER: cromwell
+    #   DB_PASSWORD: my_password
