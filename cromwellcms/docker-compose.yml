@@ -1,8 +1,11 @@
 version: '3'
+
 services:
   db:
-    image: mariadb:latest
-    container_name: mariadb_container
+    extends:
+      file: ../mariadb/docker-compose.yml
+      service: mariadb
+    container_name: mariadb-of-cromwell
     volumes:
       - ./db_data:/var/lib/mysql
     ports:
@@ -14,24 +17,9 @@ services:
       MYSQL_USER: cromwell
       MYSQL_PASSWORD: my_password
 
-  # we don't need this
-  # phpmyadmin:
-  #   depends_on:
-  #     - db
-  #   image: phpmyadmin/phpmyadmin
-  #   container_name: phpadmin_container
-  #   environment:
-  #     PMA_HOST: db
-  #     PHP_MEMORY_LIMIT: 512M
-  #   links:
-  #     - db:db
-  #   ports:
-  #     - 8081:80
-  #   restart: unless-stopped
-
   cromwell:
     image: cromwellcms/cromwell:latest
-    container_name: cromwell_container
+    container_name: cromwell
     depends_on:
       - db
     volumes:
