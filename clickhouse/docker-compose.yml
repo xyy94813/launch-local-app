@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  clickhouse:
+    image: bitnami/clickhouse:latest
+    container_name: clickhouse
+    volumes:
+      - ./db_data:/bitnami/clickhouse
+    ports:
+      - 8123:8123
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_ADMIN_USER: clickhouse
+      CLICKHOUSE_ADMIN_PASSWORD: my_password
+      ALLOW_EMPTY_PASSWORD: 'no'
