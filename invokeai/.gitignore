@@ -1,0 +1,6 @@
+**
+
+!.gitignore
+!docker-compose.yml
+!.env.sample
+!README.md
