@@ -1,0 +1,39 @@
+
+version: '3.8'
+
+services:
+  mtatomo:
+    image: matomo:latest
+    ports:
+      - ${MATOMO__PORT-8919}:80
+    restart: unless-stopped
+    env_file:
+      - .mtatomo-conf.env
+    environment:
+      - MATOMO_DATABASE_HOST=db
+      - MATOMO_DATABASE_ADAPTER=mysql
+      - MATOMO_DATABASE_TABLES_PREFIX=matomo_
+      - MATOMO_DATABASE_USERNAME=${MYSQL_USER:-mtatomo}
+      - MATOMO_DATABASE_PASSWORD=${MYSQL_PASSWORD:-mtatomo}
+      - MATOMO_DATABASE_DBNAME=${MYSQL_DATABASE:-mtatomo}
+    volumes:
+      - ./mtatomo:/var/www/html
+
+  db:
+    extends:
+      file: ../mariadb/docker-compose.yml
+      service: mariadb
+    # image: mariadb:latest
+    container_name: mariadb-of-mtatomo
+    # restart: unless-stopped
+    # ports:
+    #   - 3306:3306
+    env_file:
+      - .mtatomo-conf.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=matomo
+      - MYSQL_DATABASE=mtatomo
+      - MYSQL_USER=mtatomo
+      - MYSQL_PASSWORD=mtatomo
+    volumes:
+      - ./db_data:/var/lib/mysql
