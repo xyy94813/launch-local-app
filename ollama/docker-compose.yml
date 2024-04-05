@@ -1,22 +1,47 @@
 version: '3'
 
+x-ollama: &ollama
+  image: ollama/ollama:latest
+  # pull_policy: always
+  restart: unless-stopped
+  tty: true
+  # env_file:
+  #   - .ollama.env
+  volumes:
+    - ./ollama:/root/.ollama
+
 services:
-  ollama:
-    image: ollama/ollama:latest
+  ollama-nvidia:
+    <<: *ollama
     container_name: ollama
-    # pull_policy: always
-    restart: unless-stopped
-    tty: true
-    # env_file:
-    #   - .ollama.env
-    volumes:
-      - ./ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ollama-cpu:
+  #   <<: *ollama
+  #   profiles:
+  #     - cpu
+
+  # ollama-rocm:
+  #   <<: *ollama
+  #   devices:
+  #     - /dev/kfd:/dev/kfd
+  #     - /dev/dri:/dev/dri
+  #   profiles:
+  #     - rocm
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
     depends_on:
-      - ollama
+      - ollama-nvidia
+      # - ollama-cpu
+      # - ollama-rocm
     env_file:
       - .env
     environment:
