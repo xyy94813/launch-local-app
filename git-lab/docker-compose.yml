@@ -1,0 +1,39 @@
+version: "3.6"
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:16.11.1-ee.0
+    container_name: gitlab
+    env_file:
+      - .env
+    environment:
+      GITLAB_OMNIBUS_CONFIG: "from_file('/omnibus_config.rb')"
+      HOST_NAME: ${GIT_LAB_HOST_NAME-my.gitlab.com}
+      EXPORT_HTTP_PORT: ${GITLAB_EXPORT_HTTP_PORT-8929}
+      EXPORT_HTTPS_PORT: ${GITLAB_EXPORT_HTTPS_PORT-443}
+    restart: always
+    hostname: $HOST_NAME
+    ports:
+      - '${EXPORT_HTTP_PORT-8929}:8929' # web server
+      - '${EXPORT_HTTPS_PORT-8930}:443'
+      - '2424:2424' # ssh
+    volumes:
+      - $GITLAB_HOME/data:/var/opt/gitlab
+      - $GITLAB_HOME/logs:/var/log/gitlab
+      - $GITLAB_HOME/config:/etc/gitlab
+    shm_size: '256m'
+    configs:
+      - source: gitlab
+        target: /omnibus_config.rb
+    secrets:
+      - gitlab_root_password
+  # gitlab-runner:
+  #   image: gitlab/gitlab-runner:alpine
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 4
+configs:
+  gitlab:
+    file: ./gitlab.rb
+secrets:
+  gitlab_root_password:
+    file: ./root_password.txt
